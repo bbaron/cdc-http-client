@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.example.loan.model.Client;
@@ -14,6 +15,8 @@ import com.example.loan.model.LoanApplicationStatus;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@AutoConfigureStubRunner(ids = { "com.example:cdc-http-server:+:stubs:8080" },
+        workOffline = true)
 public class CdcHttpClientApplicationTests {
     @Autowired
     private LoanApplicationService service;
@@ -21,13 +24,16 @@ public class CdcHttpClientApplicationTests {
     @Test
     public void shouldBeRejectedDueToAbnormalLoanAmount() {
         // given:
-        LoanApplication application = new LoanApplication(new Client("1234567890"),
+        LoanApplication application = new LoanApplication(
+                new Client("1234567890"),
                 99999);
         // when:
-        LoanApplicationResult loanApplication = service.loanApplication(application);
+        LoanApplicationResult loanApplication = service
+                .loanApplication(application);
         // then:
         assertThat(loanApplication.getLoanApplicationStatus())
                 .isEqualTo(LoanApplicationStatus.LOAN_APPLICATION_REJECTED);
-        assertThat(loanApplication.getRejectionReason()).isEqualTo("Amount too high");
+        assertThat(loanApplication.getRejectionReason())
+                .isEqualTo("Amount too high");
     }
 }
